@@ -1,11 +1,12 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import { Expense, ExpenseStatus } from './expense.types'
-import { defaultLists } from './default.list'
+import { TZDate } from "@date-fns/tz";
 
 interface ExpenseState {
   expenses: Expense[]
-  addExpense: (title: string, amount: string) => void
+  fetchExpenses: () => void
+  addExpense: (date: Date, title: string, amount: string, status: ExpenseStatus.todo) => void
   setExpenseStatus: (id: number, status: ExpenseStatus) => void
   deleteExpense: (id: number) => void
 }
@@ -15,20 +16,71 @@ interface ExpenseState {
 export const useExpenseStore = create<ExpenseState>()(
   devtools(
     persist(
-      (set) => ({
-        expenses: defaultLists,
-        addExpense: (title: string, amount: string) =>
-          set((state) => ({
-            expenses: [
-              ...state.expenses,
-              {
-                id: state.expenses.length++,
-                title: title,
-                amount: amount,
-                status: ExpenseStatus.todo,
+      (set, get) => ({
+        expenses: [],
+        fetchExpenses: async () => {
+          try {
+            const res = await fetch("/api/expenses");
+            if (!res.ok) {
+              throw new Error("Failed to fetch expenses");
+            }
+            const { expenseList } = await res.json();
+
+            const serializedExpenses: Expense[] = expenseList.map((item: { key: string; value: { bangkokDate: string; title: string; amount: string; status: string } }) => ({
+              id: parseInt(item.key, 10),
+              title: item.value.title,
+              amount: item.value.amount,
+              date: new Date(item.value.bangkokDate),
+              status: item.value.status as ExpenseStatus,
+            }));
+
+            set({ expenses: serializedExpenses });
+            console.log("Fetched expenses:", serializedExpenses);
+          } catch (error) {
+            console.error("Error fetching expenses:", error);
+          }
+        },
+        addExpense: async (date: Date, title: string, amount: string, status: ExpenseStatus.todo) => {
+          try {
+            date = new TZDate(date, "Asia/Singapore");
+
+            // Calculate newId by accessing the current state
+            const currentExpenses = get().expenses;
+            const lastExpense = currentExpenses[currentExpenses.length - 1];
+            const newId = lastExpense ? lastExpense.id + 1 : 1; // Start at 1 if no expenses exist
+
+            // Perform the fetch and pass newId in the body
+            const res = await fetch("/api/blob", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
               },
-            ],
-          })),
+              body: JSON.stringify({ id: newId, title, date, amount, status }),
+            });
+
+            if (!res.ok) {
+              throw new Error("Failed to create blob");
+            }
+
+            // Add the new expense to the state
+            set((state) => ({
+              expenses: [
+                ...state.expenses,
+                {
+                  id: newId,
+                  title,
+                  amount,
+                  date: date,
+                  status: ExpenseStatus.todo,
+                },
+              ],
+            }));
+
+            console.log("Expense and blob created successfully");
+          } catch (error) {
+            console.log(error);
+          }
+        },
         setExpenseStatus: (id: number, status: ExpenseStatus) =>
           set((state) => ({
             expenses: state.expenses.map((expense) =>

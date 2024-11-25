@@ -5,9 +5,11 @@ import { useExpenseStore } from "@/lib/store";
 import { ChakraBox } from "./ChakraBox";
 import { LuTrash2 } from "react-icons/lu";
 import { useCopilotAction } from "@copilotkit/react-core";
+import { toaster } from "./ui/toaster";
+import { format } from "date-fns";
 
 export default function Expense({
-  expense: { id, title, amount, status },
+  expense: { id, title, amount, date, status },
 }: {
   expense: Expense;
 }) {
@@ -68,9 +70,21 @@ export default function Expense({
         fontSize="sm"
         textDecoration={status === ExpenseStatus.done ? "line-through" : "none"}
       >
-        {title} {amount}
+        {format(date, "MM/dd/yyyy")} {title} {amount}
       </Text>
-      <Button variant="ghost" size="sm" onClick={() => deleteExpense(id)}>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          deleteExpense(id);
+          toaster.create({
+            title: `Sucess`,
+            type: "info",
+            description: `Deleted ${title} successfully`,
+            duration: 3000,
+          });
+        }}
+      >
         <LuTrash2 width="4" height="4" />
         <span className="sr-only">Delete</span>
       </Button>

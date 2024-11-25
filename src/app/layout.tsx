@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Provider } from "@/components/ui/provider";
-import { CopilotKit } from "@copilotkit/react-core"; 
+import { CopilotKit } from "@copilotkit/react-core";
 import "@copilotkit/react-ui/styles.css";
+import 'react-datepicker/dist/react-datepicker.css'
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,6 +32,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <Provider>
           <CopilotKit runtimeUrl="/api/copilotkit">{children}</CopilotKit>
+          <Toaster />
         </Provider>
       </body>
     </html>
