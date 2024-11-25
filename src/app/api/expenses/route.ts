@@ -2,6 +2,7 @@ import { getStore } from "@netlify/blobs";
 
 export async function GET() {
   const expense = getStore({ siteID: process.env.BLOB_SITE_ID, token: process.env.BLOB_SITE_KEY, name: "expense" });
+  // await expense.delete('1')
   const list = await expense.list()
   const expenseList = [];
   for (const { key } of list.blobs) {

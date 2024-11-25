@@ -7,6 +7,7 @@ import { AnimatePresence } from "framer-motion";
 import Expense from "./Expense";
 import { Box, Container, Text } from "@chakra-ui/react";
 import AddExpense from "./AddExpense";
+import { ColorModeButton } from "./ui/color-mode";
 
 export default function ExpensesList() {
   const { expenses, fetchExpenses } = useExpenseStore();
@@ -38,11 +39,11 @@ export default function ExpensesList() {
         minW="full"
         md={{ minWidth: "500px" }}
       >
+        <ColorModeButton />
         <Text fontSize="2xl" fontWeight="bold">
           ✍️ My Expenses
         </Text>
         <AddExpense />
-
         <AnimatePresence>
           {expenses
             .sort((a, b) => {

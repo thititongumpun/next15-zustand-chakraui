@@ -26,11 +26,11 @@ export const useExpenseStore = create<ExpenseState>()(
             }
             const { expenseList } = await res.json();
 
-            const serializedExpenses: Expense[] = expenseList.map((item: { key: string; value: { bangkokDate: string; title: string; amount: string; status: string } }) => ({
+            const serializedExpenses: Expense[] = expenseList.map((item: { key: string; value: { date: string; title: string; amount: string; status: string } }) => ({
               id: parseInt(item.key, 10),
               title: item.value.title,
               amount: item.value.amount,
-              date: new Date(item.value.bangkokDate),
+              date: new Date(item.value.date),
               status: item.value.status as ExpenseStatus,
             }));
 
@@ -42,7 +42,6 @@ export const useExpenseStore = create<ExpenseState>()(
         },
         addExpense: async (date: Date, title: string, amount: string, status: ExpenseStatus.todo) => {
           try {
-            date = new TZDate(date, "Asia/Singapore");
 
             // Calculate newId by accessing the current state
             const currentExpenses = get().expenses;
@@ -55,7 +54,7 @@ export const useExpenseStore = create<ExpenseState>()(
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ id: newId, title, date, amount, status }),
+              body: JSON.stringify({ id: newId, title, date: new TZDate(date, "Asia/Singapore"), amount, status }),
             });
 
             if (!res.ok) {

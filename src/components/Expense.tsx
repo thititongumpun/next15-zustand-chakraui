@@ -70,7 +70,7 @@ export default function Expense({
         fontSize="sm"
         textDecoration={status === ExpenseStatus.done ? "line-through" : "none"}
       >
-        {format(date, "MM/dd/yyyy")} {title} {amount}
+        {format(date, "dd/MM/yyyy")} {title} {amount}
       </Text>
       <Button
         variant="ghost"
