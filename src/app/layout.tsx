@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
+import { Provider } from "@/components/ui/provider";
+import { CopilotKit } from "@copilotkit/react-core"; 
+import "@copilotkit/react-ui/styles.css";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -24,9 +26,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+        <Provider>
+          <CopilotKit runtimeUrl="/api/copilotkit">{children}</CopilotKit>
+        </Provider>
       </body>
     </html>
   );
