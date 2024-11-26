@@ -53,14 +53,22 @@ export default function Expense({
     >
       <Checkbox
         id={`expense${id}`}
-        onClick={() =>
+        onClick={() => {
           setExpenseStatus(
             id,
             status === ExpenseStatus.done
               ? ExpenseStatus.todo
               : ExpenseStatus.done
-          )
-        }
+          );
+          toaster.create({
+            title: `Sucess`,
+            type: "success",
+            description: `Marked ${title} as ${
+              status === ExpenseStatus.done ? "todo" : "done"
+            } successfully`,
+            duration: 3000,
+          });
+        }}
         checked={status === ExpenseStatus.done}
       />
       <Text fontSize="sm" color="ActiveBorder" fontWeight="medium">

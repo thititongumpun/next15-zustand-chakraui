@@ -12,10 +12,8 @@ import { ColorModeButton } from "./ui/color-mode";
 export default function ExpensesList() {
   const { expenses, fetchExpenses } = useExpenseStore();
 
-  console.log(expenses);
-
   useEffect(() => {
-    fetchExpenses(); // Fetch expenses on component mount
+    fetchExpenses();
   }, [fetchExpenses]);
 
   if (!expenses) {

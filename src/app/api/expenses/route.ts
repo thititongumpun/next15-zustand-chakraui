@@ -2,7 +2,6 @@ import { getStore } from "@netlify/blobs";
 
 export async function GET() {
   const expense = getStore({ siteID: process.env.BLOB_SITE_ID, token: process.env.BLOB_SITE_KEY, name: "expense" });
-  // await expense.delete('1')
   const list = await expense.list()
   const expenseList = [];
   for (const { key } of list.blobs) {
@@ -11,4 +10,13 @@ export async function GET() {
   }
 
   return Response.json({ expenseList })
+}
+
+export async function POST(req: Request) {
+  const { id, date, title, amount, status } = await req.json()
+  const expense = getStore({ siteID: process.env.BLOB_SITE_ID, token: process.env.BLOB_SITE_KEY, name: "expense" });
+
+  await expense.setJSON("" + id, { date, title, amount, status })
+
+  return Response.json({ message: 'Created Expense successfully' })
 }

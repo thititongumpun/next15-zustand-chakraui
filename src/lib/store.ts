@@ -11,8 +11,6 @@ interface ExpenseState {
   deleteExpense: (id: number) => void
 }
 
-
-
 export const useExpenseStore = create<ExpenseState>()(
   devtools(
     persist(
@@ -35,7 +33,6 @@ export const useExpenseStore = create<ExpenseState>()(
             }));
 
             set({ expenses: serializedExpenses });
-            console.log("Fetched expenses:", serializedExpenses);
           } catch (error) {
             console.error("Error fetching expenses:", error);
           }
@@ -45,11 +42,12 @@ export const useExpenseStore = create<ExpenseState>()(
 
             // Calculate newId by accessing the current state
             const currentExpenses = get().expenses;
-            const lastExpense = currentExpenses[currentExpenses.length - 1];
-            const newId = lastExpense ? lastExpense.id + 1 : 1; // Start at 1 if no expenses exist
+            // Find the smallest unused ID
+            const usedIds = currentExpenses.map((expense) => expense.id);
+            const newId = usedIds.length === 0 ? 1 : Math.min(...Array.from({ length: Math.max(...usedIds) + 1 }, (_, i) => i + 1).filter((id) => !usedIds.includes(id)));
 
             // Perform the fetch and pass newId in the body
-            const res = await fetch("/api/blob", {
+            const res = await fetch("/api/expenses", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -75,21 +73,78 @@ export const useExpenseStore = create<ExpenseState>()(
               ],
             }));
 
-            console.log("Expense and blob created successfully");
           } catch (error) {
             console.log(error);
           }
         },
-        setExpenseStatus: (id: number, status: ExpenseStatus) =>
+        setExpenseStatus: async (id: number, status: ExpenseStatus) => {
           set((state) => ({
             expenses: state.expenses.map((expense) =>
               expense.id === id ? { ...expense, status } : expense,
             ),
-          })),
-        deleteExpense: (id: number) =>
+          }))
+
+          try {
+            // Make an API call to update the status on the server
+            const response = await fetch(`/api/expenses/${id}`, {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ status }),
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to update status on the server");
+            }
+
+            // Optionally, re-fetch expenses from the server to sync local and server state
+            const updatedExpense = await response.json();
+            set((state) => ({
+              expenses: state.expenses.map((expense) =>
+                expense.id === id ? { ...expense, ...updatedExpense } : expense
+              ),
+            }));
+          } catch (error) {
+            console.error("Error updating expense status:", error);
+
+            // Revert the optimistic update in case of an error
+            set((state) => ({
+              expenses: state.expenses.map((expense) =>
+                expense.id === id ? { ...expense, status: expense.status } : expense
+              ),
+            }));
+          }
+        },
+        deleteExpense: async (id: number) => {
+          // Optimistically update the state
+          const currentExpenses = get().expenses;
+          const expenseToDelete = currentExpenses.find((expense) => expense.id === id);
+          if (!expenseToDelete) {
+            console.error(`Expense with id ${id} not found`);
+            return;
+          }
+
           set((state) => ({
             expenses: state.expenses.filter((expense) => expense.id !== id),
-          })),
+          }))
+
+          try {
+            // Make an API call to update the status on the server
+            const response = await fetch(`/api/expenses/${id}`, {
+              method: "DELETE",
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to delete expense on the server");
+            }
+          } catch (error) {
+            console.error("Error updating expense status:", error);
+
+            // Revert the local state to include the expense again
+            set({ expenses: currentExpenses });
+          }
+        },
         clear: () => set({ expenses: [] }),
       }),
       {
