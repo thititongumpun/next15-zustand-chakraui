@@ -8,6 +8,7 @@ import Expense from "./Expense";
 import { Box, Container, Text } from "@chakra-ui/react";
 import AddExpense from "./AddExpense";
 import { ColorModeButton } from "./ui/color-mode";
+import Loading from "./Loading";
 
 export default function ExpensesList() {
   const { expenses, fetchExpenses } = useExpenseStore();
@@ -17,7 +18,7 @@ export default function ExpensesList() {
   }, [fetchExpenses]);
 
   if (!expenses) {
-    return <>loading....</>;
+    return <Loading />
   }
 
   return (
