@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next'
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Smart Money Saver PWA',
-    short_name: 'SMAPWA',
+    short_name: 'Smart Money Saver PWA',
     description: 'A Progressive Web App Smart Money Saver with gemini AI',
     start_url: '/',
     display: 'standalone',
