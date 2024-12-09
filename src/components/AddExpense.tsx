@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useExpenseStore } from "@/lib/store";
-import { Input } from "@chakra-ui/react";
+import { Input, VStack, Text, HStack } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";
 import {
   NumberInputField,
@@ -69,8 +69,11 @@ export default function AddExpense() {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()}>
-      <div className="flex items-center mb-4">
+    <VStack as="form" onSubmit={(e) => e.preventDefault()} align="stretch">
+      <Text fontSize="xl" fontWeight="bold">
+        Add New Expense
+      </Text>
+      <HStack spaceX={4}>
         <DatePicker
           selectedDate={selectedDate}
           onChange={(date) => setSelectedDate(date)}
@@ -81,12 +84,13 @@ export default function AddExpense() {
           onChange={(e) => setTitle(e.target.value)}
           type="text"
           placeholder="Add a new expense..."
-          display="flex"
-          flexBasis="1"
           bg="bg.muted"
           color="fg.muted"
           rounded="md"
+          flex={1}
         />
+      </HStack>
+      <HStack spaceX={4}>
         <NumberInputRoot
           value={amount}
           onValueChange={(e) => setAmount(e.value)}
@@ -96,29 +100,20 @@ export default function AddExpense() {
           color="fg.muted"
           rounded="md"
         >
-          <NumberInputField />
+          <NumberInputField placeholder="Amount" />
         </NumberInputRoot>
-        {/* <Button
-          type="submit"
-          disabled={!title}
-          onClick={() => {
-            handleAddExpense();
-          }}
-        >
-          Add
-        </Button> */}
         <Button
           type="submit"
           loading={isLoading}
           loadingText="Saving..."
           disabled={!title}
-          onClick={() => {
-            handleAddExpense();
-          }}
+          onClick={handleAddExpense}
+          colorScheme="blue"
+          width="150px"
         >
-          Add
+          Add Expense
         </Button>
-      </div>
-    </form>
+      </HStack>
+    </VStack>
   );
 }
